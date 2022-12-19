@@ -88,69 +88,66 @@ def encode(i, frame_in, frame_out, quality, sharpen, noise):
 def main(args):
 
 	# parsing arguments
-	# mode = args[1] # identify, mpc
-	# folder_frame_in = args[2]
-	# folder_frame_out = args[3]
-	# folder_results = args[4]
-	# setpoint_quality = float(args[5])
-	# setpoint_compression = float(args[6])
+	mode = args[1] # identify, mpc
+	folder_frame_in = args[2]
+	folder_frame_out = args[3]
+	folder_results = args[4]
+	setpoint_quality = float(args[5])
+	setpoint_compression = float(args[6])
 	mode = 'dct'
 	# getting frames and opening result file
-	controller = dctController.DCTController()
-	sd = controller.do_compress(15, 30)
-	controller.save_image(sd, 'test')
-	# path, dirs, files = os.walk(folder_frame_in).next()
-	# frame_count = len(files)
-	# final_frame = frame_count + 1
-	# log = open(folder_results + '/results.csv', 'w')
-	# # print(frame_count);
-	# if mode == "dct":
-	# 	controller = dctController.DCTController()
-	# 	# controller = mpccontroller.initialize_mpc()
-	# # elif mode == "random":
-	# # 	controller = randomcontroller.RandomController()
-	# # elif mode == "bangbang":
-	# # 	controller = bangbangcontroller.BangbangController()
-	# elif mode == "dct":
-	# 	controller = dctController.DCTController()
+	path, dirs, files = os.walk(folder_frame_in).next()
+	frame_count = len(files)
+	final_frame = frame_count + 1
+	log = open(folder_results + '/results.csv', 'w')
+	# print(frame_count);
+	if mode == "dct":
+		controller = dctController.DCTController()
+		controller = mpccontroller.initialize_mpc()
+	elif mode == "random":
+		controller = randomcontroller.RandomController()
+	elif mode == "bangbang":
+		controller = bangbangcontroller.BangbangController()
+	elif mode == "dct":
+		controller = dctController.DCTController()
 	
-	# # initial values for actuators
-	# ctl = np.matrix([[100], [0], [0]])
-	# for i in range(1, final_frame):
-	# 	# main loop
-	# 	quality = np.round(ctl.item(0))
-	# 	sharpen = np.round(ctl.item(1))
-	# 	noise = np.round(ctl.item(2))
+	# initial values for actuators
+	ctl = np.matrix([[100], [0], [0]])
+	for i in range(1, final_frame):
+		# main loop
+		quality = np.round(ctl.item(0))
+		sharpen = np.round(ctl.item(1))
+		noise = np.round(ctl.item(2))
 
-	# 	# encoding the current frame
-	# 	(current_quality, current_size) = \
-	# 		encode(i, folder_frame_in, folder_frame_out, quality, sharpen, noise)
-	# 	log_line = '{i}, {quality}, {sharpen}, {noise}, {ssim}, {size}'.format(
-	# 		i = i, quality = quality, sharpen = sharpen, noise = noise,
-	# 		ssim = current_quality, size = current_size)
-	# 	print >>log, log_line
+		# encoding the current frame
+		(current_quality, current_size) = \
+			encode(i, folder_frame_in, folder_frame_out, quality, sharpen, noise)
+		log_line = '{i}, {quality}, {sharpen}, {noise}, {ssim}, {size}'.format(
+			i = i, quality = quality, sharpen = sharpen, noise = noise,
+			ssim = current_quality, size = current_size)
+		print >>log, log_line
 		
-	# 	setpoints = np.matrix([[setpoint_quality], [setpoint_compression]])
-	# 	current_outputs = np.matrix([[current_quality], [current_size]])
+		setpoints = np.matrix([[setpoint_quality], [setpoint_compression]])
+		current_outputs = np.matrix([[current_quality], [current_size]])
 		
-	# 	# computing actuator values for the next frame
-	# 	if mode == "mpc":
-	# 		try:
-	# 			ctl = controller.compute_u(current_outputs, setpoints)
-	# 		except Exception:
-	# 			pass
+		# computing actuator values for the next frame
+		if mode == "mpc":
+			try:
+				ctl = controller.compute_u(current_outputs, setpoints)
+			except Exception:
+				pass
     
-	# 	elif mode == "random":
-	# 		ctl = controller.compute_u()
+		elif mode == "random":
+			ctl = controller.compute_u()
 			
-	# 	elif mode == "bangbang":
-	# 		ctl = controller.compute_u(current_outputs, setpoints)
+		elif mode == "bangbang":
+			ctl = controller.compute_u(current_outputs, setpoints)
 
-	# 	elif mode == "dct":
-	# 		matrix_a = image_to_matrix(pathIn(folder_frame_in))
-	# 		ctl = controller.do_compress(matrix_a, current_outputs, setpoints)
+		elif mode == "dct":
+			matrix_a = image_to_matrix(pathIn(folder_frame_in))
+			ctl = controller.do_compress(matrix_a, current_outputs, setpoints)
 			
-	# print(" done")
+	print(" done")
 
 if __name__ == "__main__":
 	main(sys.argv)
