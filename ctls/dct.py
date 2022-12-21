@@ -10,12 +10,6 @@ from PIL import Image
 from matplotlib.image import imread
 
 class DCTController:
-
-    def get_matrix_from_image(test, path, mode="RGB"):
-        x = Image.open(r"C:\Users\Dauma\Desktop\test.jpg").convert(mode)
-        data = np.asarray(x)
-        return(data)
-
     def cosp(test,i,j,n):
         output = 0
         output = cos(((2*i)+1)*j*math.pi/(2*n))
@@ -54,16 +48,8 @@ class DCTController:
         img = Image.open(f)
         gray_img = img.convert("L")
         f = np.asarray(gray_img)
-        plt.imshow(f, cmap=plt.cm.gray)
-        plt.axis('off')
-        plt.show()
-        print('image matrix size: ', f.shape )
         n = 8  # This will be the window in which we perform our DCT
         sumd = 0 # INIT value
-
-        pos = 175
-        size = 256
-        f = f[pos:pos+size,pos:pos+size]
 
         # Create some blank matrices to store our data
 
@@ -77,7 +63,6 @@ class DCTController:
                 # Below, compute the DCT for a given uxv location in the DCT Matrix
                 for u in r_[a:a+n]:
                     for v in r_[b:b+n]:
-                        print DCTController().convolveDCT(f,n,u,v,a,b)
                         dctmatrix[u,v] = DCTController().convolveDCT(f,n,u,v,a,b)
         np.around(dctmatrix)
 
@@ -113,14 +98,8 @@ class DCTController:
                 for x in r_[a:a+n]:
                     for y in r_[b:b+n]:
                         f2[x,y] = DCTController().convolveIDCT(dctmatrix,n,x,y,a,b)
-
-        print f2
+                        
         f2 = f2 + 128 # Scale our values back to 0-255 so we can see it!
-
-        plt.figure()
-        plt.imshow(f2, cmap=plt.cm.gray)
-        plt.title("8x8 DCTs of the image3")
-        plt.show()
 
         return(f2)
 
