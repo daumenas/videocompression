@@ -88,14 +88,18 @@ def encode(i, frame_in, frame_out, quality, sharpen, noise):
 def main(args):
 
 	# parsing arguments
-	mode = args[1] # identify, mpc
-	folder_frame_in = args[2]
-	folder_frame_out = args[3]
-	folder_results = args[4]
-	setpoint_quality = float(args[5])
-	setpoint_compression = float(args[6])
+	# mode = args[1] # identify, mpc
+	# folder_frame_in = args[2]
+	# folder_frame_out = args[3]
+	# folder_results = args[4]
+	# setpoint_quality = float(args[5])
+	# setpoint_compression = float(args[6])
 	mode = 'dct'
 	# getting frames and opening result file
+	controller = dctController.DCTController()
+	sd = controller.do_compress("C:/Users/Dauma/Desktop/test.jpg", 90)
+	controller.save_image(sd, 'test1.jpg')
+	exit()
 	path, dirs, files = os.walk(folder_frame_in).next()
 	frame_count = len(files)
 	final_frame = frame_count + 1
@@ -120,32 +124,31 @@ def main(args):
 		noise = np.round(ctl.item(2))
 
 		# encoding the current frame
-		(current_quality, current_size) = \
-			encode(i, folder_frame_in, folder_frame_out, quality, sharpen, noise)
-		log_line = '{i}, {quality}, {sharpen}, {noise}, {ssim}, {size}'.format(
-			i = i, quality = quality, sharpen = sharpen, noise = noise,
-			ssim = current_quality, size = current_size)
-		print >>log, log_line
-		
-		setpoints = np.matrix([[setpoint_quality], [setpoint_compression]])
-		current_outputs = np.matrix([[current_quality], [current_size]])
-		
-		# computing actuator values for the next frame
-		if mode == "mpc":
-			try:
-				ctl = controller.compute_u(current_outputs, setpoints)
-			except Exception:
-				pass
-    
-		elif mode == "random":
-			ctl = controller.compute_u()
+		if mode != 'dct' :
+			(current_quality, current_size) = \
+				encode(i, folder_frame_in, folder_frame_out, quality, sharpen, noise)
+			log_line = '{i}, {quality}, {sharpen}, {noise}, {ssim}, {size}'.format(
+				i = i, quality = quality, sharpen = sharpen, noise = noise,
+				ssim = current_quality, size = current_size)
+			print >>log, log_line
 			
-		elif mode == "bangbang":
-			ctl = controller.compute_u(current_outputs, setpoints)
-
-		elif mode == "dct":
+			setpoints = np.matrix([[setpoint_quality], [setpoint_compression]])
+			current_outputs = np.matrix([[current_quality], [current_size]])
+					# computing actuator values for the next frame
+			if mode == "mpc":
+				try:
+					ctl = controller.compute_u(current_outputs, setpoints)
+				except Exception:
+					pass
+		
+			elif mode == "random":
+				ctl = controller.compute_u()
+				
+			elif mode == "bangbang":
+				ctl = controller.compute_u(current_outputs, setpoints)
+		elif mode == 'dct':
 			matrix_a = image_to_matrix(pathIn(folder_frame_in))
-			ctl = controller.do_compress(matrix_a, current_outputs, setpoints)
+			ctl = controller.do_compress(matrix_a, setpoints)
 			
 	print(" done")
 
